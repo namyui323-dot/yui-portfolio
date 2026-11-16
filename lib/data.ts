@@ -160,22 +160,7 @@ export const projectsData: LocalizedProjectData[] = [
       },
     },
     tags: ['Brand', 'Trade Show'],
-  },
-  {
-    translations: {
-      en: {
-        title: 'HUP — regional food brand',
-        description:
-          'Ran a year-long tourism–food startup at university. Secured ₩4M in funding, built the brand identity, and sold 200+ units through social media campaigns.',
-      },
-      ko: {
-        title: 'HUP — 지역 식품 브랜드',
-        description:
-          '대학 창업동아리로 1년간 관광·식품 스타트업을 운영했습니다. 사업비 400만 원을 확보하고, 브랜드 아이덴티티를 직접 만들어 SNS 캠페인으로 200개 이상 판매했습니다.',
-      },
-    },
-    tags: ['Founder', 'Brand Identity', 'Social Media'],
-  },
+  }
 ];
 
 // ✏️ 스킬: icon은 아이콘, color는 아이콘 색(브랜드 색), badge는 언어처럼 글자 상자로 표시
