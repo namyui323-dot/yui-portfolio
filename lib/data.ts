@@ -215,6 +215,15 @@ export const activitiesData: {
     description:
       'Spent two months living in Turin, Italy, during a university break — an experience that sparked my interest in European markets and the Italian language.',
     photos: [],
+  }, 
+    {
+    slug: 'hup',
+    title: 'HUP — Regional Food Brand',
+    date: 'May 2024 - Feb 2025',
+    summary: 'Ran a year-long tourism–food startup. Secured ₩4M in funding and sold 200+ units.',
+    description:
+      'Ran a year-long tourism–food startup at university. Secured ₩4M in funding, built the brand identity, and sold 200+ units through social media campaigns.',
+    photos: [],
   },
   {
     slug: 'capstone-design',
