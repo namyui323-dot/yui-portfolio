@@ -40,7 +40,7 @@ export default function Intro() {
             sizes="(max-width: 640px) 224px, 256px"
             quality={95}
             priority
-            className="object-cover object-top grayscale transition duration-700 group-hover:grayscale-0 group-hover:scale-105 motion-reduce:transition-none"
+className="object-cover object-top transition duration-700 group-hover:scale-105 motion-reduce:transition-none"
           />
         </motion.div>
 
