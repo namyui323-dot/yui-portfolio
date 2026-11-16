@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "Home": "홈",
+    "About": "소개",
+    "Projects": "프로젝트",
+    "Skills": "역량",
+    "Experience": "경력",
+    "Education": "학력",
+    "Activities": "활동",
+    "Contact": "연락처"
+  },
+  "intro": {
+    "name": "Yui",
+    "role": "해외영업 · 수출 규제 대응",
+    "bio": "유럽과 러시아/CIS 시장에서 K-뷰티 스킨케어 브랜드의 첫 견적부터 규정에 맞는 선적까지 책임집니다. 식품마케팅과 관능과학을 공부하고 직접 브랜드를 창업해 본 경험으로, 제품이 실제 소비자에게 어떻게 닿는지를 고민합니다.",
+    "contactButton": "연락하기",
+    "downloadCvButton": "이력서 다운로드"
+  },
+  "about": {
+    "title": "소개",
+    "paragraph1": "<degree>생명과학대학</degree>에서 식품마케팅과 관능과학을 중심으로 공부했고, 원산지 표시가 소비자 신뢰에 미치는 영향을 주제로 졸업논문을 썼습니다. 재학 중에는 <position>지역 식품 브랜드 HUP을 창업</position>했습니다. <industry>품질보증(QA)과 인허가(RA)</industry> 경험을 거쳐 MIRAERO KOREA CO., LTD.에 입사해 폴란드, 스페인, 리투아니아, 이탈리아, 러시아/CIS <learning>해외 거래처를 관리</learning>하고 있습니다. <favorite>가장 보람을 느끼는 부분은</favorite> 영업과 서류 작업을 연결해 제품이 실제로 국경을 넘게 만드는 일입니다. 브랜드가 새로운 시장에 잘 안착하는 모습을 보는 것을 <love>정말 좋아합니다</love>. 핵심 역량은 <stack>OEM/ODM 프로젝트 관리, EU 규제 대응, 가격 전략</stack>입니다. <seeking>해외영업과 브랜드 매니지먼트 분야의 기회를 찾고 있습니다.</seeking>",
+    "paragraph2": "<notCoding>업무 외에는</notCoding> <learning>패션디자인</learning>을 전공한 경험을 살려 Photoshop과 Illustrator로 비주얼 작업을 합니다. 이탈리아 토리노에서 두 달간 지냈고, 지금은 <studying>이탈리아어를 공부</studying>하고 있습니다."
+  },
+  "contact": {
+    "Header": "연락처",
+    "Please": "아래 이메일로 연락 주세요:"
+  },
+  "myProjects": {
+    "Header": "주요 프로젝트"
+  }
+}
