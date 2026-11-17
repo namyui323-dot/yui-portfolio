@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 export default function Contact() {
   const { ref } = useSectionInView('Contact');
   const t = useTranslations('contact');
+  const email = useTranslations('site')('email');
 
   return (
     <motion.section
@@ -31,9 +32,8 @@ export default function Contact() {
       <SectionHeading>{t('Header')}</SectionHeading>
       <p className="text-gray-700 -mt-6 dark:text-white/80">
         {t('Please')}{' '}
-        {/* ✏️ 개인 이메일로 바꾸세요 */}
-        <a className="underline" href="mailto:namyui323@gmail.com">
-          namyui323@gmail.com
+        <a className="underline" href={`mailto:${email}`}>
+          {email}
         </a>{' '}
       </p>
     </motion.section>

@@ -25,6 +25,7 @@ export default function Project({ translations, tags, imageUrl, imageLink, index
         {imageUrl ? (
           <Image
             src={imageUrl}
+            {...(typeof imageUrl === 'string' ? { width: 1200, height: 800, sizes: '(max-width: 640px) 100vw, 420px' } : {})}
             alt={title}
             quality={90}
             className="w-full h-auto object-cover object-top transition-transform duration-[4000ms] ease-in-out group-hover:-translate-y-[calc(100%-12rem)] motion-reduce:transition-none"

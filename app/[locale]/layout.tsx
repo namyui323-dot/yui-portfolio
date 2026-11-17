@@ -7,15 +7,17 @@ import ThemeSwitch from '@/components/theme-switch';
 import ThemeContextProvider from '@/context/theme-context';
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import LanguageSelector from '@/components/locale/LanguageSelector';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Yui — Overseas Sales & Export | K-Beauty',
-  description: 'Yui — overseas sales and export compliance in the K-beauty industry.',
-};
+// 브라우저 탭 제목·검색 설명 (messages의 site 항목 또는 시트 Settings 탭)
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'site' });
+  return { title: t('title'), description: t('description') };
+}
 
 interface LayoutProps {
   children: React.ReactNode;

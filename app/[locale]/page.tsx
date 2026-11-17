@@ -7,18 +7,30 @@ import Experience from '@/components/experience';
 import Education from '@/components/education';
 import Activities from '@/components/activities';
 import Contact from '@/components/contact';
+import { getExperiences, getProjects, getActivities, getEducation, getSkills } from '@/lib/sheet';
 
-export default function Home() {
+// 구글 시트 내용을 60초마다 다시 읽음
+export const revalidate = 60;
+
+export default async function Home() {
+  const [experiences, projects, activities, education, skills] = await Promise.all([
+    getExperiences(),
+    getProjects(),
+    getActivities(),
+    getEducation(),
+    getSkills(),
+  ]);
+
   return (
     <main className="flex flex-col items-center px-4">
       <Intro />
       <SectionDivider />
       <About />
-      <Experience />
-      <Projects />
-      <Skills />
-      <Education />
-      <Activities />
+      <Experience items={experiences} />
+      <Projects items={projects} />
+      <Skills items={skills} />
+      <Education items={education} />
+      <Activities items={activities} />
       <Contact />
     </main>
   );

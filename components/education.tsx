@@ -4,16 +4,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import SectionHeading from './section-heading';
 import { educationData } from '@/lib/data';
+import type { Education as EducationItem } from '@/lib/sheet';
 import { useSectionInView } from '@/lib/hooks';
+import { useTranslations } from 'next-intl';
 
-export default function Education() {
+export default function Education({ items = educationData }: { items?: EducationItem[] }) {
   const { ref } = useSectionInView('Education', 0.5);
+  const h = useTranslations('headings');
 
   return (
     <section id="education" ref={ref} className="scroll-mt-28 mb-28 sm:mb-40 w-full max-w-[42rem]">
-      <SectionHeading>Education</SectionHeading>
+      <SectionHeading>{h('Education')}</SectionHeading>
       <ul className="flex flex-col gap-3">
-        {educationData.map((item, index) => (
+        {items.map((item, index) => (
           <motion.li
             key={item.school}
             initial={{ opacity: 0, y: 30 }}

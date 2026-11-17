@@ -4,9 +4,14 @@ import React from 'react';
 import SectionHeading from './section-heading';
 import { motion } from 'framer-motion';
 import { useSectionInView } from '@/lib/hooks';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
 import { useTranslations } from 'next-intl';
+
+// 문구 안의 <b>굵게</b>, <i>기울임</i>, <u>밑줄</u> 표시
+const rich = {
+  b: (chunks: React.ReactNode) => <span className="font-semibold">{chunks}</span>,
+  i: (chunks: React.ReactNode) => <span className="italic">{chunks}</span>,
+  u: (chunks: React.ReactNode) => <span className="underline">{chunks}</span>,
+};
 
 export default function About() {
   const { ref } = useSectionInView('About');
@@ -22,26 +27,9 @@ export default function About() {
     >
       <SectionHeading>{t('title')}</SectionHeading>
 
-      <p>
-        {t.rich('paragraph1', {
-          degree: (chunks) => <span className="font-medium">{chunks}</span>,
-          position: (chunks) => <span className="font-bold">{chunks}</span>,
-          industry: (chunks) => <span className="font-medium">{chunks}</span>,
-          learning: (chunks) => <span className="italic">{chunks}</span>,
-          favorite: (chunks) => <span className="italic">{chunks}</span>,
-          love: (chunks) => <span className="underline">{chunks}</span>,
-          stack: (chunks) => <span className="font-medium">{chunks}</span>,
-          seeking: (chunks) => <span className="font-medium">{chunks}</span>,
-        })}
-      </p>
+      <p>{t.rich('paragraph1', rich)}</p>
 
-      <p>
-        {t.rich('paragraph2', {
-          notCoding: (chunks) => <span className="italic">{chunks}</span>,
-          learning: (chunks) => <span className="font-medium">{chunks}</span>,
-          studying: (chunks) => <span className="font-medium">{chunks}</span>,
-        })}
-      </p>
+      <p>{t.rich('paragraph2', rich)}</p>
     </motion.section>
   );
 }

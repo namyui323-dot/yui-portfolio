@@ -6,16 +6,19 @@ import { motion } from 'framer-motion';
 import { BsArrowRight } from 'react-icons/bs';
 import SectionHeading from './section-heading';
 import { activitiesData } from '@/lib/data';
+import type { Activity } from '@/lib/sheet';
 import { useSectionInView } from '@/lib/hooks';
+import { useTranslations } from 'next-intl';
 
-export default function Activities() {
+export default function Activities({ items = activitiesData }: { items?: Activity[] }) {
   const { ref } = useSectionInView('Activities', 0.3);
+  const h = useTranslations('headings');
 
   return (
     <section id="activities" ref={ref} className="scroll-mt-28 mb-28 sm:mb-40 w-full max-w-[42rem]">
-      <SectionHeading>Activities</SectionHeading>
+      <SectionHeading>{h('Activities')}</SectionHeading>
       <ul className="flex flex-col gap-3">
-        {activitiesData.map((item, index) => (
+        {items.map((item, index) => (
           <motion.li
             key={item.slug}
             initial={{ opacity: 0, y: 30 }}

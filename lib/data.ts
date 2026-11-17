@@ -1,16 +1,3 @@
-import type { IconType } from 'react-icons';
-import {
-  LuUsers,
-  LuRocket,
-  LuFactory,
-  LuShip,
-  LuDollarSign,
-  LuRecycle,
-  LuTags,
-  LuShieldCheck,
-  LuMegaphone,
-} from 'react-icons/lu';
-import { SiAdobephotoshop, SiAdobeillustrator, SiGooglesheets } from 'react-icons/si';
 import { LocalizedProjectData } from './types';
 
 export const links = [
@@ -127,7 +114,7 @@ export const projectsData: LocalizedProjectData[] = [
       ko: {
         title: '러시아 대형 유통사 제안용 패키지·마케팅 자료',
         description:
-          '약 2개월간 러시아 대형 리테일 체인에 제안한 스킨케어 라인의 여러 SKU 패키지를 디자인하고, 마케팅 서포트 자료를 제작했습니다.',
+          '약 2개월간 러시아 대형 리테일 체인에 제안한 스킨케어 라인의 여러 SKU 패키지를 디자인하고, 마케팅 서포트 자료 일체를 제작했습니다.',
       },
     },
     tags: ['Package Design', 'Marketing', 'Russia'],
@@ -148,20 +135,21 @@ export const projectsData: LocalizedProjectData[] = [
     tags: ['Brand', 'Photoshop', 'Illustrator'],
   }
 ];
-// ✏️ 스킬: icon은 아이콘, color는 아이콘 색(브랜드 색), badge는 언어처럼 글자 상자로 표시
-export const skillsData: { name: string; icon?: IconType; color?: string; badge?: string }[] = [
-  { name: 'Account Management', icon: LuUsers },
-  { name: 'New Business Development', icon: LuRocket },
-  { name: 'OEM/ODM Project Management', icon: LuFactory },
-  { name: 'Export Logistics', icon: LuShip },
-  { name: 'Pricing', icon: LuDollarSign },
-  { name: 'EU Regulatory (PPWR)', icon: LuRecycle },
-  { name: 'Allergen Labelling', icon: LuTags },
-  { name: 'ISO 22716 / GMP', icon: LuShieldCheck },
-  { name: 'Brand Marketing', icon: LuMegaphone },
-  { name: 'Photoshop', icon: SiAdobephotoshop, color: '#31A8FF' },
-  { name: 'Illustrator', icon: SiAdobeillustrator, color: '#FF9A00' },
-  { name: 'Excel / Google Sheets', icon: SiGooglesheets, color: '#34A853' },
+
+// ✏️ 스킬: icon은 lib/icons.ts에 있는 이름, color는 아이콘 색, badge는 언어처럼 글자 상자로 표시
+export const skillsData: { name: string; icon?: string; color?: string; badge?: string }[] = [
+  { name: 'Account Management', icon: 'users' },
+  { name: 'New Business Development', icon: 'rocket' },
+  { name: 'OEM/ODM Project Management', icon: 'factory' },
+  { name: 'Export Logistics', icon: 'ship' },
+  { name: 'Pricing', icon: 'dollar' },
+  { name: 'EU Regulatory (PPWR)', icon: 'recycle' },
+  { name: 'Allergen Labelling', icon: 'tags' },
+  { name: 'ISO 22716 / GMP', icon: 'shield' },
+  { name: 'Brand Marketing', icon: 'megaphone' },
+  { name: 'Photoshop', icon: 'photoshop' },
+  { name: 'Illustrator', icon: 'illustrator' },
+  { name: 'Excel / Google Sheets', icon: 'sheets' },
   { name: 'Korean', badge: 'KR' },
   { name: 'English (C1 · TOEIC 805 · TOEIC Speaking AL)', badge: 'EN' },
   { name: 'Italian (Basic)', badge: 'IT' },

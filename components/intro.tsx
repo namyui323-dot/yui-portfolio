@@ -10,15 +10,17 @@ import { useSectionInView } from '@/lib/hooks';
 import { useActiveSectionContext } from '@/context/active-section-context';
 import { useTranslations } from 'next-intl';
 
-// ✏️ 프로필 사진 (public/ 폴더)
-const PROFILE_PHOTO = '/profile.jpg';
-const LINKEDIN_URL = 'https://www.linkedin.com/in/yuinam/';
-const CV_FILE = '/CV_Yui.pdf';
 
 export default function Intro() {
   const { ref } = useSectionInView('Home', 0.5);
   const { setActiveSection, setTimeOfLastClick } = useActiveSectionContext();
   const t = useTranslations('intro');
+  const site = useTranslations('site');
+  // 사진·CV·LinkedIn은 messages의 site 항목 또는 구글 시트 Settings 탭에서 바꿈
+  const PROFILE_PHOTO = site('photo');
+  const LINKEDIN_URL = site('linkedin');
+  const CV_FILE = site('cv');
+  const cvIsExternal = CV_FILE.startsWith('http');
 
   return (
     <section
@@ -70,7 +72,8 @@ className="object-cover object-top transition duration-700 group-hover:scale-105
             </Link>
             <a
               href={CV_FILE}
-              download
+              download={cvIsExternal ? undefined : true}
+              {...(cvIsExternal ? { target: '_blank', rel: 'noreferrer' } : {})}
               className="group flex items-center gap-2 rounded-full bg-white px-6 py-3 outline-none transition hover:scale-105 focus:scale-105 active:scale-100 borderBlack dark:bg-white/10"
             >
               {t('downloadCvButton')}

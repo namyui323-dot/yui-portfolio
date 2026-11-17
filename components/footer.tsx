@@ -1,9 +1,11 @@
 import React from 'react';
+import { getTranslations } from 'next-intl/server';
 
-export default function Footer() {
+export default async function Footer() {
+  const t = await getTranslations('footer');
   return (
     <footer className="mb-10 px-4 text-center text-gray-500">
-      <small className="text-xs block">Thanks for scrolling all the way down.</small>
+      <small className="text-xs block">{t('text')}</small>
     </footer>
   );
 }

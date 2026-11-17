@@ -5,17 +5,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { BsArrowUpRight, BsChevronDown } from 'react-icons/bs';
 import SectionHeading from './section-heading';
 import { experiencesData } from '@/lib/data';
+import type { Experience as ExperienceItem } from '@/lib/sheet';
 import { useSectionInView } from '@/lib/hooks';
+import { useTranslations } from 'next-intl';
 
-export default function Experience() {
+export default function Experience({ items = experiencesData }: { items?: ExperienceItem[] }) {
   const { ref } = useSectionInView('Experience', 0.3);
+  const h = useTranslations('headings');
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section id="experience" ref={ref} className="scroll-mt-28 mb-28 sm:mb-40 w-full max-w-[42rem]">
-      <SectionHeading>Experience</SectionHeading>
+      <SectionHeading>{h('Experience')}</SectionHeading>
       <ul className="flex flex-col gap-4">
-        {experiencesData.map((item, index) => {
+        {items.map((item, index) => {
           const isOpen = open === index;
           return (
             <motion.li

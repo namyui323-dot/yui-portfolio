@@ -3,7 +3,10 @@
 import React from 'react';
 import SectionHeading from './section-heading';
 import { skillsData } from '@/lib/data';
+import type { Skill } from '@/lib/sheet';
+import { ICONS } from '@/lib/icons';
 import { useSectionInView } from '@/lib/hooks';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 
 const fadeIn = {
@@ -15,15 +18,18 @@ const fadeIn = {
   }),
 };
 
-export default function Skills() {
+export default function Skills({ items = skillsData }: { items?: Skill[] }) {
   const { ref } = useSectionInView('Skills');
+  const h = useTranslations('headings');
 
   return (
     <section id="skills" ref={ref} className="mb-28 max-w-[53rem] scroll-mt-28 text-center sm:mb-40">
-      <SectionHeading>Skills</SectionHeading>
+      <SectionHeading>{h('Skills')}</SectionHeading>
       <ul className="flex flex-wrap justify-center gap-2.5">
-        {skillsData.map((skill, index) => {
-          const Icon = skill.icon;
+        {items.map((skill, index) => {
+          const found = skill.icon ? ICONS[skill.icon] : undefined;
+          const Icon = found?.icon;
+          const color = skill.color || found?.color;
           return (
             <motion.li
               key={skill.name}
@@ -37,7 +43,7 @@ export default function Skills() {
               transition={{ type: 'spring', stiffness: 400, damping: 18 }}
               className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-[0.95rem] text-gray-800 shadow-sm cursor-default transition-colors duration-200 hover:bg-gray-100 dark:bg-white/5 dark:border-white/10 dark:text-white/85 dark:hover:bg-white/15"
             >
-              {Icon && <Icon aria-hidden="true" className="shrink-0 text-lg" style={skill.color ? { color: skill.color } : undefined} />}
+              {Icon && <Icon aria-hidden="true" className="shrink-0 text-lg" style={color ? { color } : undefined} />}
               {skill.badge && (
                 <span aria-hidden="true" className="shrink-0 rounded-[0.3rem] border-[1.5px] border-current px-1 text-[0.6rem] font-bold leading-[1.1rem]">
                   {skill.badge}
