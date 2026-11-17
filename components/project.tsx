@@ -10,6 +10,9 @@ type ProjectProps = (typeof projectsData)[number] & { index: number };
 export default function Project({ translations, tags, imageUrl, imageLink, index }: ProjectProps) {
   const locale = useLocale() as 'en' | 'ko';
   const { title, description } = translations[locale];
+  const src = typeof imageUrl === 'string' ? imageUrl : '';
+  const isVideo = /\.(mp4|webm)(\?|$)/i.test(src);
+  const isGif = /\.gif(\?|$)/i.test(src);
 
   const card = (
     <motion.article
@@ -22,10 +25,23 @@ export default function Project({ translations, tags, imageUrl, imageLink, index
     >
       {/* 미리보기: 이미지가 있으면 마우스를 올렸을 때 천천히 아래로 스크롤, 없으면 태그가 흐르는 띠 */}
       <div className="relative h-44 sm:h-48 overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10">
-        {imageUrl ? (
+        {isVideo ? (
+          // 움직이는 미리보기: 짧은 화면 녹화 영상(.mp4/.webm)을 소리 없이 반복 재생
+          <video
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={title}
+            className="absolute inset-0 h-full w-full object-cover object-top"
+          />
+        ) : imageUrl ? (
           <Image
             src={imageUrl}
             {...(typeof imageUrl === 'string' ? { width: 1200, height: 800, sizes: '(max-width: 640px) 100vw, 420px' } : {})}
+            unoptimized={isGif}
             alt={title}
             quality={90}
             className="w-full h-auto object-cover object-top transition-transform duration-[4000ms] ease-in-out group-hover:-translate-y-[calc(100%-12rem)] motion-reduce:transition-none"
