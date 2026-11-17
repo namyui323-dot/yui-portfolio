@@ -5,6 +5,8 @@ import { experiencesData, projectsData, activitiesData, educationData, skillsDat
 // 비워두면 messages/*.json, lib/data.ts 내용이 그대로 쓰입니다.
 export const SHEET_ID = '1CGL2NkzVeWvsmYy1EAHRXDZOUcpFz5rQSuq3cCINNug';
 
+// https://docs.google.com/spreadsheets/d/1CGL2NkzVeWvsmYy1EAHRXDZOUcpFz5rQSuq3cCINNug/edit?usp=sharing
+
 // 시트를 다시 읽는 간격(초). 60 = 시트 수정 후 약 1분 뒤 사이트에 반영
 export const REVALIDATE_SECONDS = 60;
 
