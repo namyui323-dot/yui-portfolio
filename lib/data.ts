@@ -38,7 +38,7 @@ export const experiencesData = [
       'Account Management: Handling buyers in Poland, Spain, Lithuania, Italy and Russia/CIS from first quote to shipment.',
       'OEM/ODM Projects: Coordinating briefs, samples, MOQs and lead times with partner factories.',
       'Regulatory & Export: Preparing PPWR packaging documentation, allergen labelling, and GMP / ISO 22716 evidence for EU market entry.',
-      'Pricing & Brand Support: Building buyer price lists and creating visuals for the PRESENT SKIN brand deck.',
+      'Pricing & Brand Support: Building buyer price lists, creating visuals for the PRESENT SKIN brand deck, and preparing the Cosmoprof Asia Awards 2026 entry.',
     ],
   },
   {
@@ -90,17 +90,17 @@ export const projectsData: LocalizedProjectData[] = [
   {
     translations: {
       en: {
-        title: 'Packaging revision for a major Russian retail chain',
+        title: 'Buyer-specific price list system',
         description:
-          'Managed a packaging redesign for a large grocery retailer’s skincare range, keeping design changes, production and export timelines aligned.',
+          'Built a tool that applies buyer-specific markups to the master price list and gives each buyer a PIN-protected mobile page to calculate quotes and request proforma invoices.',
       },
       ko: {
-        title: '러시아 대형 유통사 패키지 개정',
+        title: '바이어별 가격표 자동화 시스템',
         description:
-          '러시아 대형 리테일 체인의 스킨케어 제품 패키지 리뉴얼을 담당하며 디자인 변경, 생산, 수출 일정을 조율했습니다.',
+          '기준 가격표에 바이어별 마크업을 자동 적용하고, 바이어가 PIN으로 접속해 모바일에서 견적 계산과 프로포마 인보이스 요청까지 할 수 있는 도구를 만들었습니다.',
       },
     },
-    tags: ['Account Management', 'Packaging', 'Russia'],
+    tags: ['Pricing', 'Apps Script', 'Automation'],
   },
   {
     translations: {
@@ -120,17 +120,17 @@ export const projectsData: LocalizedProjectData[] = [
   {
     translations: {
       en: {
-        title: 'Onboarding a Baltic distributor',
+        title: 'Packaging & marketing materials for a Russian retail chain',
         description:
-          'Closed the documentation gaps a new Lithuanian distributor required — ISO 22716, GMP and RP mandate — so orders could move forward.',
+          'Over two months, designed packaging for multiple SKUs and produced the marketing support materials for a skincare range proposed to a major Russian grocery retailer.',
       },
       ko: {
-        title: '발트 지역 신규 유통사 온보딩',
+        title: '러시아 대형 유통사 제안용 패키지·마케팅 자료',
         description:
-          '리투아니아 신규 유통사가 요구한 ISO 22716, GMP, RP Mandate 서류를 보완해 거래가 진행될 수 있도록 했습니다.',
+          '약 2개월간 러시아 대형 리테일 체인에 제안한 스킨케어 라인의 여러 SKU 패키지를 디자인하고, 마케팅 서포트 자료를 제작했습니다.',
       },
     },
-    tags: ['Market Entry', 'Lithuania', 'GMP'],
+    tags: ['Package Design', 'Marketing', 'Russia'],
   },
   {
     translations: {
@@ -146,23 +146,8 @@ export const projectsData: LocalizedProjectData[] = [
       },
     },
     tags: ['Brand', 'Photoshop', 'Illustrator'],
-  },
-  {
-    translations: {
-      en: {
-        title: 'Cosmoprof Asia Awards 2026 entry',
-        description:
-          'Prepared the product entries and submission for the brand’s award application.',
-      },
-      ko: {
-        title: 'Cosmoprof Asia Awards 2026 출품',
-        description: '브랜드 어워드 출품을 위한 제품 엔트리와 제출 절차를 준비했습니다.',
-      },
-    },
-    tags: ['Brand', 'Trade Show'],
   }
 ];
-
 // ✏️ 스킬: icon은 아이콘, color는 아이콘 색(브랜드 색), badge는 언어처럼 글자 상자로 표시
 export const skillsData: { name: string; icon?: IconType; color?: string; badge?: string }[] = [
   { name: 'Account Management', icon: LuUsers },
