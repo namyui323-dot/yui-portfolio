@@ -3,7 +3,7 @@ import { experiencesData, projectsData, activitiesData, educationData, skillsDat
 
 // ✏️ 구글 시트 ID: 시트 주소 docs.google.com/spreadsheets/d/【여기 부분】/edit 을 따옴표 안에 붙여넣으세요.
 // 비워두면 messages/*.json, lib/data.ts 내용이 그대로 쓰입니다.
-export const SHEET_ID = '';
+export const SHEET_ID = '1CGL2NkzVeWvsmYy1EAHRXDZOUcpFz5rQSuq3cCINNug';
 
 // 시트를 다시 읽는 간격(초). 60 = 시트 수정 후 약 1분 뒤 사이트에 반영
 export const REVALIDATE_SECONDS = 60;
