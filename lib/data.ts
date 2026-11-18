@@ -75,6 +75,7 @@ export const educationData = [
 
 export const projectsData: LocalizedProjectData[] = [
   {
+    id: 'P_04',
     translations: {
       en: {
         title: 'Buyer-specific price list system',
@@ -90,6 +91,7 @@ export const projectsData: LocalizedProjectData[] = [
     tags: ['Pricing', 'Apps Script', 'Automation'],
   },
   {
+    id: 'P_03',
     translations: {
       en: {
         title: 'EU packaging compliance (PPWR)',
@@ -105,6 +107,7 @@ export const projectsData: LocalizedProjectData[] = [
     tags: ['Regulatory', 'EU', 'Documentation'],
   },
   {
+    id: 'P_02',
     translations: {
       en: {
         title: 'Packaging & marketing materials for a Russian retail chain',
@@ -120,6 +123,7 @@ export const projectsData: LocalizedProjectData[] = [
     tags: ['Package Design', 'Marketing', 'Russia'],
   },
   {
+    id: 'P_01',
     translations: {
       en: {
         title: 'PRESENT SKIN brand deck',

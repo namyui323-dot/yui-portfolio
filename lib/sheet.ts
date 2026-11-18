@@ -109,6 +109,7 @@ export async function getProjects(): Promise<Project[]> {
   const rows = await readTab('Projects');
   if (!rows || rows.length === 0) return projectsData;
   return rows.map((r) => ({
+    id: r.id || undefined,
     translations: {
       en: { title: r.title_en, description: r.description_en },
       ko: { title: r.title_ko || r.title_en, description: r.description_ko || r.description_en },

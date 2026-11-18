@@ -1,16 +1,33 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import { projectsData } from '@/lib/data';
 
 type ProjectProps = (typeof projectsData)[number] & { index: number };
 
-export default function Project({ translations, tags, imageUrl, imageLink, index }: ProjectProps) {
+// 프로젝트 번호로 찾을 파일 확장자 (앞에서부터 차례로 시도)
+const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
+
+export default function Project({ id, translations, tags, imageUrl, imageLink, index }: ProjectProps) {
   const locale = useLocale() as 'en' | 'ko';
   const { title, description } = translations[locale];
-  const src = typeof imageUrl === 'string' ? imageUrl : '';
+  // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
+  const candidates = useMemo(() => {
+    if (imageUrl) return [imageUrl];
+    if (id) return EXTS.map((ext) => `/projects/${id}.${ext}`);
+    return [];
+  }, [imageUrl, id]);
+  const [tryIndex, setTryIndex] = useState(0);
+  // 화면이 준비된 뒤에 파일을 찾아야 '없는 파일'을 제대로 감지할 수 있음
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const waiting = !mounted && candidates.length > 0;
+  const current = mounted ? candidates[tryIndex] : undefined;
+  const tryNext = () => setTryIndex((i) => i + 1);
+  const src = typeof current === 'string' ? current : '';
   const isVideo = /\.(mp4|webm)(\?|$)/i.test(src);
   const isGif = /\.gif(\?|$)/i.test(src);
 
@@ -25,23 +42,27 @@ export default function Project({ translations, tags, imageUrl, imageLink, index
     >
       {/* 미리보기: 이미지가 있으면 마우스를 올렸을 때 천천히 아래로 스크롤, 없으면 태그가 흐르는 띠 */}
       <div className="relative h-44 sm:h-48 overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10">
-        {isVideo ? (
+        {waiting ? null : isVideo ? (
           // 움직이는 미리보기: 짧은 화면 녹화 영상(.mp4/.webm)을 소리 없이 반복 재생
           <video
+            key={src}
             src={src}
             autoPlay
             muted
             loop
             playsInline
             preload="metadata"
+            onError={tryNext}
             aria-label={title}
             className="absolute inset-0 h-full w-full object-cover object-top"
           />
-        ) : imageUrl ? (
+        ) : current ? (
           <Image
-            src={imageUrl}
-            {...(typeof imageUrl === 'string' ? { width: 1200, height: 800, sizes: '(max-width: 640px) 100vw, 420px' } : {})}
+            key={src || 'static'}
+            src={current}
+            {...(typeof current === 'string' ? { width: 1200, height: 800, sizes: '(max-width: 640px) 100vw, 420px' } : {})}
             unoptimized={isGif}
+            onError={tryNext}
             alt={title}
             quality={90}
             className="w-full h-auto object-cover object-top transition-transform duration-[4000ms] ease-in-out group-hover:-translate-y-[calc(100%-12rem)] motion-reduce:transition-none"
