@@ -12,6 +12,21 @@ type ProjectProps = (typeof projectsData)[number] & { index: number };
 // 프로젝트 번호로 찾을 파일 확장자 (앞에서부터 차례로 시도)
 const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 
+// description 칸에 ## / - / > 로 구조를 쓰면 상세 화면에 섹션형으로 표시됨
+const isStructured = (t?: string) => !!t && /^(##|-|>) /m.test(t);
+
+// 카드에 보일 짧은 요약: 첫 섹션 앞의 문장, 없으면 기호를 걷어낸 앞부분
+function summarize(text: string): string {
+  const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  const intro: string[] = [];
+  for (const l of lines) {
+    if (/^(##|-|>) /.test(l)) break;
+    intro.push(l);
+  }
+  const pick = intro.length ? intro : lines.map((l) => l.replace(/^(##|-|>) /, '').replace(/\s*\|\s*/g, ' · '));
+  return pick.join(' ').replace(/\*\*/g, '');
+}
+
 // 문장 안의 **숫자·핵심어**를 형광펜처럼 강조
 function inline(text: string): ReactNode[] {
   return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
@@ -41,10 +56,21 @@ function renderDetail(text: string): ReactNode {
     const nodes = cur().nodes;
     if (bullets.length) {
       nodes.push(
-        <ul key={`u${nodes.length}`} className="list-disc space-y-2 pl-5">
-          {bullets.map((b, i) => (
-            <li key={i}>{inline(b)}</li>
-          ))}
+        <ul key={`u${nodes.length}`} className="space-y-4">
+          {bullets.map((b, i) => {
+            const at = b.indexOf(' · ');
+            const label = at > 0 ? b.slice(0, at) : '';
+            const body = at > 0 ? b.slice(at + 3) : b;
+            return (
+              <li key={i} className="flex gap-3">
+                <span className="mt-[0.7em] h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400 dark:bg-white/40" />
+                <div>
+                  {label && <div className="font-medium text-gray-900 dark:text-white">{inline(label)}</div>}
+                  <div>{inline(body)}</div>
+                </div>
+              </li>
+            );
+          })}
         </ul>,
       );
       bullets = [];
@@ -86,20 +112,20 @@ function renderDetail(text: string): ReactNode {
 
   let n = 0;
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {sections
         .filter((sec) => sec.title || sec.nodes.length)
         .map((sec, i) => (
-          <section key={i}>
+          <section key={i} className={i > 0 ? 'border-t border-black/10 pt-8 dark:border-white/10' : ''}>
             {sec.title && (
-              <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="flex items-center gap-3 text-xl font-semibold text-gray-900 dark:text-white">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm text-white dark:bg-white dark:text-gray-900">
                   {++n}
                 </span>
                 {sec.title}
               </h3>
             )}
-            <div className={`space-y-3 leading-relaxed text-gray-700 dark:text-white/80 ${sec.title ? 'mt-3 sm:pl-10' : ''}`}>{sec.nodes}</div>
+            <div className={`space-y-4 text-base leading-8 text-gray-700 dark:text-white/80 sm:text-[17px] ${sec.title ? 'mt-4 sm:pl-10' : ''}`}>{sec.nodes}</div>
           </section>
         ))}
     </div>
@@ -168,7 +194,7 @@ function ProjectModal({
             <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-8">
+        <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 py-6 pb-12 sm:px-10 sm:py-8 sm:pb-14">
           <h2 className="text-2xl font-semibold leading-snug">{title}</h2>
           {tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
@@ -177,8 +203,8 @@ function ProjectModal({
               ))}
             </div>
           )}
-          <p className="mt-4 text-lg leading-relaxed text-gray-700 dark:text-white/80">{description}</p>
-          {detail && <div className="mt-8 border-t border-black/10 pt-8 dark:border-white/10">{renderDetail(detail)}</div>}
+          {description && <p className="mt-4 text-lg leading-8 text-gray-700 dark:text-white/80">{description}</p>}
+          {detail && <div className={description ? 'mt-8 border-t border-black/10 pt-8 dark:border-white/10' : 'mt-6'}>{renderDetail(detail)}</div>}
         </div>
       </div>
     </div>
@@ -187,7 +213,11 @@ function ProjectModal({
 
 export default function Project({ id, translations, tags, imageUrl, imageLink, index }: ProjectProps) {
   const locale = useLocale() as 'en' | 'ko';
-  const { title, description, detail } = translations[locale];
+  const { title, description: rawDescription, detail: rawDetail } = translations[locale];
+  // 구조가 적힌 description은 카드에는 요약만, 상세 화면에는 전체를 섹션형으로 보여줌
+  const structured = isStructured(rawDescription);
+  const description = structured ? summarize(rawDescription) : rawDescription;
+  const detail = rawDetail || (structured ? rawDescription : undefined);
   // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
   const candidates = useMemo(() => {
     if (imageUrl) return [imageUrl];
@@ -281,14 +311,19 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
         )}
       </div>
       <h3 className="mt-3 text-lg font-medium group-hover:underline underline-offset-4">{title}</h3>
-      <p className="mt-1 text-gray-600 leading-relaxed dark:text-white/70">{description}</p>
+      <p
+        className="mt-1 text-gray-600 leading-relaxed dark:text-white/70"
+        style={structured ? { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : undefined}
+      >
+        {description}
+      </p>
     </motion.article>
   );
 
   const modal =
     open && isVideo && mounted
       ? createPortal(
-          <ProjectModal src={src} title={title} description={description} tags={tags} detail={detail} ko={locale === 'ko'} onClose={() => setOpen(false)} />,
+          <ProjectModal src={src} title={title} description={structured && !rawDetail ? '' : description} tags={tags} detail={detail} ko={locale === 'ko'} onClose={() => setOpen(false)} />,
           document.body,
         )
       : null;
