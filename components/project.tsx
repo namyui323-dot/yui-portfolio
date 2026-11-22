@@ -15,25 +15,32 @@ const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 // description 칸에 ## / - / > 로 구조를 쓰면 상세 화면에 섹션형으로 표시됨
 const isStructured = (t?: string) => !!t && /^(##|-|>) /m.test(t);
 
-// 카드에 보일 짧은 요약: 첫 섹션(##, -, >) 앞에 쓴 문장만 사용
+// 카드에 보일 짧은 요약: 첫 섹션(##, -) 앞에 쓴 일반 문장만 사용 (성과 칩 줄은 순서와 상관없이 제외)
 function summarize(text: string): string {
   const intro: string[] = [];
   for (const l of text.split(/\n/).map((x) => x.trim()).filter(Boolean)) {
-    if (/^(##|-|>) /.test(l)) break;
+    if (/^(##|-) /.test(l)) break;
+    if (l.startsWith('> ') || l.startsWith('# ')) continue; // 성과 문구·성과 칩 줄은 요약에서 제외
     intro.push(l);
   }
   return intro.join(' ').replace(/\*\*/g, '');
 }
 
-// 카드에 보일 핵심 성과: "> 값 | 설명" 줄을 작은 칩으로
+// "# 한 줄" = 면접관이 가장 궁금한 '그래서 뭘 해냈나'를 숫자 위에 작게 보여주는 문구
+function headlineOf(text: string): string {
+  const l = text.split(/\n/).map((x) => x.trim()).find((x) => x.startsWith('# '));
+  return l ? l.slice(2).replace(/\*\*/g, '') : '';
+}
+
+// 카드에 보일 핵심 성과: "> 키워드 | 값" 줄을 작은 칩으로
 function metricsOf(text: string): { value: string; label: string }[] {
   return text
     .split(/\n/)
     .map((l) => l.trim())
     .filter((l) => l.startsWith('> '))
     .map((l) => {
-      const [value, ...rest] = l.slice(2).split('|');
-      return { value: value.trim(), label: rest.join('|').trim() };
+      const [label, ...rest] = l.slice(2).split('|');
+      return rest.length ? { label: label.trim(), value: rest.join('|').trim() } : { label: '', value: label.trim() };
     });
 }
 
@@ -53,7 +60,7 @@ function inline(text: string): ReactNode[] {
 // 시트의 detail 칸 글을 섹션형으로 변환
 //  ## 제목        → 번호가 붙은 섹션 (예: 맥락과 목표 / 판단과 실행 / 변화와 성과)
 //  - 내용         → 목록 (문장 안 **강조** 가능)
-//  > 값 | 설명    → 큰 숫자 성과 카드 (예: > 3회 → 1회 | MOA 조율 이메일)
+//  > 키워드 | 값  → 큰 숫자 성과 카드 (예: > 시간 | 약 3일 → 하루)
 //  그 외 줄       → 일반 문단
 function renderDetail(text: string): ReactNode {
   type Section = { title?: string; nodes: ReactNode[] };
@@ -90,8 +97,8 @@ function renderDetail(text: string): ReactNode {
         <div key={`m${nodes.length}`} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {metrics.map((m, i) => (
             <div key={i} className="rounded-xl border border-black/10 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{m.value}</div>
-              <div className="mt-1 text-sm text-gray-600 dark:text-white/70">{m.label}</div>
+              {m.label && <div className="text-sm font-medium text-gray-600 dark:text-white/70">{m.label}</div>}
+              <div className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{m.value}</div>
             </div>
           ))}
         </div>,
@@ -109,10 +116,18 @@ function renderDetail(text: string): ReactNode {
         if (metrics.length) flush();
         return void bullets.push(l.slice(2));
       }
+      if (l.startsWith('# ')) {
+        flush();
+        return void cur().nodes.push(
+          <p key={`k${cur().nodes.length}`} className="!mb-[-0.5rem] text-sm font-medium leading-6 text-gray-500 dark:text-white/60">
+            {inline(l.slice(2))}
+          </p>,
+        );
+      }
       if (l.startsWith('> ')) {
         if (bullets.length) flush();
-        const [value, ...rest] = l.slice(2).split('|');
-        return void metrics.push({ value: value.trim(), label: rest.join('|').trim() });
+        const [label, ...rest] = l.slice(2).split('|');
+        return void metrics.push(rest.length ? { label: label.trim(), value: rest.join('|').trim() } : { label: '', value: label.trim() });
       }
       flush();
       if (l.startsWith('## ')) sections.push({ title: l.slice(3), nodes: [] });
@@ -229,6 +244,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   const description = structured ? summarize(rawDescription) : rawDescription;
   const detail = rawDetail || (structured ? rawDescription : undefined);
   const chips = structured ? metricsOf(rawDescription) : [];
+  const headline = structured ? headlineOf(rawDescription) : '';
   // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
   const candidates = useMemo(() => {
     if (imageUrl) return [imageUrl];
@@ -331,11 +347,14 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
         </p>
       )}
       {chips.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="mt-3 text-xs font-medium text-gray-500 dark:text-white/60">{headline || (locale === 'ko' ? '핵심 성과' : 'Key results')}</p>
+      )}
+      {chips.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-2">
           {chips.map((c, i) => (
             <span key={i} className="rounded-lg bg-gray-100 px-2.5 py-1 text-sm dark:bg-white/10">
+              {c.label && <span className="mr-1.5 text-gray-600 dark:text-white/70">{c.label}</span>}
               <b className="font-semibold text-gray-900 dark:text-white">{c.value}</b>
-              {c.label && <span className="ml-1.5 text-gray-600 dark:text-white/70">{c.label}</span>}
             </span>
           ))}
         </div>
