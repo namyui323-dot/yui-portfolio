@@ -12,33 +12,98 @@ type ProjectProps = (typeof projectsData)[number] & { index: number };
 // 프로젝트 번호로 찾을 파일 확장자 (앞에서부터 차례로 시도)
 const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 
-// 시트의 detail 칸 글을 읽기 좋게 변환: "## 제목" = 소제목, "- 내용" = 목록, 나머지 줄 = 문단
-function renderDetail(text: string): ReactNode[] {
-  const out: ReactNode[] = [];
+// 문장 안의 **숫자·핵심어**를 형광펜처럼 강조
+function inline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
+      <strong key={i} className="rounded bg-amber-200/70 px-1 font-semibold text-gray-900 dark:bg-amber-300/20 dark:text-white">
+        {part.slice(2, -2)}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
+// 시트의 detail 칸 글을 섹션형으로 변환
+//  ## 제목        → 번호가 붙은 섹션 (예: 맥락과 목표 / 판단과 실행 / 변화와 성과)
+//  - 내용         → 목록 (문장 안 **강조** 가능)
+//  > 값 | 설명    → 큰 숫자 성과 카드 (예: > 3회 → 1회 | MOA 조율 이메일)
+//  그 외 줄       → 일반 문단
+function renderDetail(text: string): ReactNode {
+  type Section = { title?: string; nodes: ReactNode[] };
+  const sections: Section[] = [{ nodes: [] }];
   let bullets: string[] = [];
+  let metrics: { value: string; label: string }[] = [];
+  const cur = () => sections[sections.length - 1];
+
   const flush = () => {
-    if (!bullets.length) return;
-    out.push(
-      <ul key={`u${out.length}`} className="list-disc space-y-1.5 pl-5">
-        {bullets.map((b, i) => (
-          <li key={i}>{b}</li>
-        ))}
-      </ul>,
-    );
-    bullets = [];
+    const nodes = cur().nodes;
+    if (bullets.length) {
+      nodes.push(
+        <ul key={`u${nodes.length}`} className="list-disc space-y-2 pl-5">
+          {bullets.map((b, i) => (
+            <li key={i}>{inline(b)}</li>
+          ))}
+        </ul>,
+      );
+      bullets = [];
+    }
+    if (metrics.length) {
+      nodes.push(
+        <div key={`m${nodes.length}`} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {metrics.map((m, i) => (
+            <div key={i} className="rounded-xl border border-black/10 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+              <div className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{m.value}</div>
+              <div className="mt-1 text-sm text-gray-600 dark:text-white/70">{m.label}</div>
+            </div>
+          ))}
+        </div>,
+      );
+      metrics = [];
+    }
   };
+
   text
     .split(/\n/)
     .map((l) => l.trim())
     .filter(Boolean)
     .forEach((l) => {
-      if (l.startsWith('- ')) return void bullets.push(l.slice(2));
+      if (l.startsWith('- ')) {
+        if (metrics.length) flush();
+        return void bullets.push(l.slice(2));
+      }
+      if (l.startsWith('> ')) {
+        if (bullets.length) flush();
+        const [value, ...rest] = l.slice(2).split('|');
+        return void metrics.push({ value: value.trim(), label: rest.join('|').trim() });
+      }
       flush();
-      if (l.startsWith('## ')) out.push(<h3 key={`h${out.length}`} className="pt-4 text-lg font-semibold">{l.slice(3)}</h3>);
-      else out.push(<p key={`p${out.length}`}>{l}</p>);
+      if (l.startsWith('## ')) sections.push({ title: l.slice(3), nodes: [] });
+      else cur().nodes.push(<p key={`p${cur().nodes.length}`}>{inline(l)}</p>);
     });
   flush();
-  return out;
+
+  let n = 0;
+  return (
+    <div className="space-y-8">
+      {sections
+        .filter((sec) => sec.title || sec.nodes.length)
+        .map((sec, i) => (
+          <section key={i}>
+            {sec.title && (
+              <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm text-white dark:bg-white dark:text-gray-900">
+                  {++n}
+                </span>
+                {sec.title}
+              </h3>
+            )}
+            <div className={`space-y-3 leading-relaxed text-gray-700 dark:text-white/80 ${sec.title ? 'mt-3 sm:pl-10' : ''}`}>{sec.nodes}</div>
+          </section>
+        ))}
+    </div>
+  );
 }
 
 // 카드를 클릭하면 뜨는 상세 화면: 위쪽 영상은 계속 재생되고, 아래 내용만 스크롤됨
@@ -113,7 +178,7 @@ function ProjectModal({
             </div>
           )}
           <p className="mt-4 text-lg leading-relaxed text-gray-700 dark:text-white/80">{description}</p>
-          {detail && <div className="mt-4 space-y-3 leading-relaxed text-gray-700 dark:text-white/80">{renderDetail(detail)}</div>}
+          {detail && <div className="mt-8 border-t border-black/10 pt-8 dark:border-white/10">{renderDetail(detail)}</div>}
         </div>
       </div>
     </div>
