@@ -15,16 +15,26 @@ const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 // description 칸에 ## / - / > 로 구조를 쓰면 상세 화면에 섹션형으로 표시됨
 const isStructured = (t?: string) => !!t && /^(##|-|>) /m.test(t);
 
-// 카드에 보일 짧은 요약: 첫 섹션 앞의 문장, 없으면 기호를 걷어낸 앞부분
+// 카드에 보일 짧은 요약: 첫 섹션(##, -, >) 앞에 쓴 문장만 사용
 function summarize(text: string): string {
-  const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
   const intro: string[] = [];
-  for (const l of lines) {
+  for (const l of text.split(/\n/).map((x) => x.trim()).filter(Boolean)) {
     if (/^(##|-|>) /.test(l)) break;
     intro.push(l);
   }
-  const pick = intro.length ? intro : lines.map((l) => l.replace(/^(##|-|>) /, '').replace(/\s*\|\s*/g, ' · '));
-  return pick.join(' ').replace(/\*\*/g, '');
+  return intro.join(' ').replace(/\*\*/g, '');
+}
+
+// 카드에 보일 핵심 성과: "> 값 | 설명" 줄을 작은 칩으로
+function metricsOf(text: string): { value: string; label: string }[] {
+  return text
+    .split(/\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('> '))
+    .map((l) => {
+      const [value, ...rest] = l.slice(2).split('|');
+      return { value: value.trim(), label: rest.join('|').trim() };
+    });
 }
 
 // 문장 안의 **숫자·핵심어**를 형광펜처럼 강조
@@ -218,6 +228,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   const structured = isStructured(rawDescription);
   const description = structured ? summarize(rawDescription) : rawDescription;
   const detail = rawDetail || (structured ? rawDescription : undefined);
+  const chips = structured ? metricsOf(rawDescription) : [];
   // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
   const candidates = useMemo(() => {
     if (imageUrl) return [imageUrl];
@@ -311,12 +322,24 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
         )}
       </div>
       <h3 className="mt-3 text-lg font-medium group-hover:underline underline-offset-4">{title}</h3>
-      <p
-        className="mt-1 text-gray-600 leading-relaxed dark:text-white/70"
-        style={structured ? { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : undefined}
-      >
-        {description}
-      </p>
+      {description && (
+        <p
+          className="mt-1 text-gray-600 leading-relaxed dark:text-white/70"
+          style={structured ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : undefined}
+        >
+          {description}
+        </p>
+      )}
+      {chips.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {chips.map((c, i) => (
+            <span key={i} className="rounded-lg bg-gray-100 px-2.5 py-1 text-sm dark:bg-white/10">
+              <b className="font-semibold text-gray-900 dark:text-white">{c.value}</b>
+              {c.label && <span className="ml-1.5 text-gray-600 dark:text-white/70">{c.label}</span>}
+            </span>
+          ))}
+        </div>
+      )}
     </motion.article>
   );
 
