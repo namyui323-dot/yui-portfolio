@@ -111,8 +111,8 @@ export async function getProjects(): Promise<Project[]> {
   return rows.map((r) => ({
     id: r.id || undefined,
     translations: {
-      en: { title: r.title_en, description: r.description_en },
-      ko: { title: r.title_ko || r.title_en, description: r.description_ko || r.description_en },
+      en: { title: r.title_en, description: r.description_en, detail: r.detail_en || undefined },
+      ko: { title: r.title_ko || r.title_en, description: r.description_ko || r.description_en, detail: r.detail_ko || r.detail_en || undefined },
     },
     tags: list(r.tags ?? ''),
     imageUrl: r.image ? toImageUrl(r.image) : undefined,

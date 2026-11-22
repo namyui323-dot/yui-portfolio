@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useLocale } from 'next-intl';
@@ -12,8 +12,39 @@ type ProjectProps = (typeof projectsData)[number] & { index: number };
 // 프로젝트 번호로 찾을 파일 확장자 (앞에서부터 차례로 시도)
 const EXTS = ['mp4', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 
-// 영상을 클릭하면 뜨는 큰 화면: 소리가 켜진 채 재생되고, 음소거 버튼·닫기 버튼이 있음
-function VideoModal({ src, title, onClose, ko }: { src: string; title: string; onClose: () => void; ko: boolean }) {
+// 시트의 detail 칸 글을 읽기 좋게 변환: "## 제목" = 소제목, "- 내용" = 목록, 나머지 줄 = 문단
+function renderDetail(text: string): ReactNode[] {
+  const out: ReactNode[] = [];
+  let bullets: string[] = [];
+  const flush = () => {
+    if (!bullets.length) return;
+    out.push(
+      <ul key={`u${out.length}`} className="list-disc space-y-1.5 pl-5">
+        {bullets.map((b, i) => (
+          <li key={i}>{b}</li>
+        ))}
+      </ul>,
+    );
+    bullets = [];
+  };
+  text
+    .split(/\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .forEach((l) => {
+      if (l.startsWith('- ')) return void bullets.push(l.slice(2));
+      flush();
+      if (l.startsWith('## ')) out.push(<h3 key={`h${out.length}`} className="pt-4 text-lg font-semibold">{l.slice(3)}</h3>);
+      else out.push(<p key={`p${out.length}`}>{l}</p>);
+    });
+  flush();
+  return out;
+}
+
+// 카드를 클릭하면 뜨는 상세 화면: 위쪽 영상은 계속 재생되고, 아래 내용만 스크롤됨
+function ProjectModal({
+  src, title, description, tags, detail, onClose, ko,
+}: { src: string; title: string; description: string; tags: string[]; detail?: string; onClose: () => void; ko: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(false);
 
@@ -35,43 +66,55 @@ function VideoModal({ src, title, onClose, ko }: { src: string; title: string; o
     setMuted(v.muted);
   };
 
-  const btn =
-    'flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80';
+  const btn = 'absolute top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80';
+  const icon = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label={title}
       onClick={onClose}
     >
-      <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-        <video
-          ref={ref}
-          src={src}
-          autoPlay
-          loop
-          playsInline
-          controls
-          onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
-          className="max-h-[85vh] w-full rounded-xl bg-black"
-        />
-        <button
-          type="button"
-          onClick={toggleMute}
-          aria-label={muted ? (ko ? '소리 켜기' : 'Unmute') : ko ? '음소거' : 'Mute'}
-          className={`${btn} absolute left-3 top-3`}
-        >
-          {muted ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a10 10 0 0 1 0 14" /></svg>
+      <div
+        className="flex h-full w-full max-w-3xl flex-col overflow-hidden bg-white text-gray-900 shadow-2xl dark:bg-gray-900 dark:text-white/90 sm:h-auto sm:max-h-[92vh] sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative shrink-0 bg-black">
+          <video
+            ref={ref}
+            src={src}
+            autoPlay
+            loop
+            playsInline
+            controls
+            onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
+            className="mx-auto max-h-[38vh] w-full object-contain sm:max-h-[50vh]"
+          />
+          <button type="button" onClick={toggleMute} aria-label={muted ? (ko ? '소리 켜기' : 'Unmute') : ko ? '음소거' : 'Mute'} className={`${btn} left-3`}>
+            {muted ? (
+              <svg {...icon}><path d="M11 5 6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
+            ) : (
+              <svg {...icon}><path d="M11 5 6 9H2v6h4l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a10 10 0 0 1 0 14" /></svg>
+            )}
+          </button>
+          <button type="button" onClick={onClose} aria-label={ko ? '닫기' : 'Close'} className={`${btn} right-3`}>
+            <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-8">
+          <h2 className="text-2xl font-semibold leading-snug">{title}</h2>
+          {tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {tags.map((t) => (
+                <span key={t} className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 dark:bg-white/10 dark:text-white/80">{t}</span>
+              ))}
+            </div>
           )}
-        </button>
-        <button type="button" onClick={onClose} aria-label={ko ? '닫기' : 'Close'} className={`${btn} absolute right-3 top-3`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
+          <p className="mt-4 text-lg leading-relaxed text-gray-700 dark:text-white/80">{description}</p>
+          {detail && <div className="mt-4 space-y-3 leading-relaxed text-gray-700 dark:text-white/80">{renderDetail(detail)}</div>}
+        </div>
       </div>
     </div>
   );
@@ -79,7 +122,7 @@ function VideoModal({ src, title, onClose, ko }: { src: string; title: string; o
 
 export default function Project({ id, translations, tags, imageUrl, imageLink, index }: ProjectProps) {
   const locale = useLocale() as 'en' | 'ko';
-  const { title, description } = translations[locale];
+  const { title, description, detail } = translations[locale];
   // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
   const candidates = useMemo(() => {
     if (imageUrl) return [imageUrl];
@@ -97,6 +140,8 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   const src = typeof current === 'string' ? current : '';
   const isVideo = /\.(mp4|webm)(\?|$)/i.test(src);
   const isGif = /\.gif(\?|$)/i.test(src);
+  // 영상·태그 카드는 16:9 비율로 잘림 없이 보여주고, 정지 이미지 카드만 기존 높이(스크롤 효과) 유지
+  const isStaticImage = !!current && !isVideo;
 
   const card = (
     <motion.article
@@ -109,7 +154,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
     >
       {/* 미리보기: 이미지가 있으면 마우스를 올렸을 때 천천히 아래로 스크롤, 없으면 태그가 흐르는 띠 */}
       <div
-        className={`relative h-44 sm:h-48 overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10 ${isVideo ? 'cursor-pointer' : ''}`}
+        className={`relative ${isStaticImage ? 'h-44 sm:h-48' : 'aspect-video'} overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10 ${isVideo ? 'cursor-pointer' : ''}`}
         {...(isVideo
           ? {
               role: 'button',
@@ -133,7 +178,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
             preload="metadata"
             onError={tryNext}
             aria-label={title}
-            className="absolute inset-0 h-full w-full object-cover object-top"
+            className="absolute inset-0 h-full w-full object-contain"
           />
           <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white opacity-80 transition group-hover:opacity-100">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
@@ -177,7 +222,10 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
 
   const modal =
     open && isVideo && mounted
-      ? createPortal(<VideoModal src={src} title={title} ko={locale === 'ko'} onClose={() => setOpen(false)} />, document.body)
+      ? createPortal(
+          <ProjectModal src={src} title={title} description={description} tags={tags} detail={detail} ko={locale === 'ko'} onClose={() => setOpen(false)} />,
+          document.body,
+        )
       : null;
 
   // 영상 카드는 클릭 시 큰 화면이 뜨므로 링크로 감싸지 않음
