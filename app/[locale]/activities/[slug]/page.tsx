@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { BsArrowLeft, BsChevronDown } from 'react-icons/bs';
+import { BsArrowLeft, BsArrowUpRight, BsChevronDown, BsGeoAltFill, BsLink45Deg } from 'react-icons/bs';
 import { getActivities, toImageUrl } from '@/lib/sheet';
 import { getLocale, getTranslations } from 'next-intl/server';
 import PhotoGallery from '@/components/photo-gallery';
@@ -27,6 +27,46 @@ function parseImage(line: string): InlineImage | null {
   return null;
 }
 
+// 글 안의 [보이는 글자](https://주소) → 새 탭에서 열리는 링크
+const LINK = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+function Inline({ text }: { text: string }) {
+  const parts: ReactNode[] = [];
+  let last = 0;
+  const re = new RegExp(LINK.source, 'g');
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const i = m.index;
+    if (i > last) parts.push(text.slice(last, i));
+    parts.push(
+      <a key={i} href={m[2]} target="_blank" rel="noopener noreferrer" className="font-medium text-rose-600 underline underline-offset-4 decoration-rose-300 hover:decoration-rose-600 dark:text-rose-400 dark:decoration-rose-400/50">
+        {m[1]}
+      </a>,
+    );
+    last = i + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
+// 링크만 있는 줄 → 눈에 띄는 버튼 (지도 링크면 핀 아이콘)
+const ONLY_LINK = /^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/;
+function LinkButton({ label, href }: { label: string; href: string }) {
+  const isMap = /google\.[a-z.]+\/maps|maps\.app\.goo\.gl|openstreetmap/.test(href);
+  const Icon = isMap ? BsGeoAltFill : BsLink45Deg;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group mt-4 inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-2.5 text-base font-medium text-white shadow-sm transition hover:bg-rose-700 hover:shadow-md active:scale-[0.98]"
+    >
+      <Icon aria-hidden="true" className="shrink-0" />
+      <span>{label}</span>
+      <BsArrowUpRight aria-hidden="true" className="shrink-0 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+    </a>
+  );
+}
+
 // 일반 줄들(목록·문단·사진·지도)을 화면 요소로
 function renderLines(lines: string[], title: string, locale: string, keyBase: string): ReactNode[] {
   const out: ReactNode[] = [];
@@ -38,7 +78,9 @@ function renderLines(lines: string[], title: string, locale: string, keyBase: st
     out.push(
       <ul key={k()} className="mt-3 list-disc space-y-2 pl-5">
         {items.map((t, i) => (
-          <li key={i}>{t}</li>
+          <li key={i}>
+            <Inline text={t} />
+          </li>
         ))}
       </ul>,
     );
@@ -57,6 +99,12 @@ function renderLines(lines: string[], title: string, locale: string, keyBase: st
       continue;
     }
     flushImages();
+    const only = line.replace(/^-\s+/, '').match(ONLY_LINK);
+    if (only) {
+      flushList();
+      out.push(<LinkButton key={k()} label={only[1]} href={only[2]} />);
+      continue;
+    }
     const map = line.match(MAP);
     if (map) {
       flushList();
@@ -67,7 +115,7 @@ function renderLines(lines: string[], title: string, locale: string, keyBase: st
       flushList();
       out.push(
         <p key={k()} className="mt-3">
-          {line}
+          <Inline text={line} />
         </p>,
       );
     }
