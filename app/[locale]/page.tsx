@@ -8,15 +8,17 @@ import Education from '@/components/education';
 import Activities from '@/components/activities';
 import Contact from '@/components/contact';
 import { getExperiences, getProjects, getActivities, getEducation, getSkills } from '@/lib/sheet';
+import { getLocale } from 'next-intl/server';
 
 // 구글 시트 내용을 60초마다 다시 읽음
 export const revalidate = 60;
 
 export default async function Home() {
+  const locale = await getLocale();
   const [experiences, projects, activities, education, skills] = await Promise.all([
     getExperiences(),
     getProjects(),
-    getActivities(),
+    getActivities(locale),
     getEducation(),
     getSkills(),
   ]);

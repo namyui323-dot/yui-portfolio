@@ -120,17 +120,21 @@ export async function getProjects(): Promise<Project[]> {
   }));
 }
 
-export async function getActivities(): Promise<Activity[]> {
+// 활동: 영어는 title·date·summary·description 칸, 한국어는 title_ko·date_ko·summary_ko·description_ko 칸.
+// 한국어 칸이 비어 있으면 영어 칸 내용이 그대로 보임
+export async function getActivities(locale: string = 'en'): Promise<Activity[]> {
   const rows = await readTab('Activities');
   if (!rows || rows.length === 0) return activitiesData;
+  const pick = (r: Record<string, string>, key: string) =>
+    (locale === 'ko' && r[`${key}_ko`]) || r[key] || r[`${key}_en`] || '';
   return rows
     .filter((r) => r.slug)
     .map((r) => ({
       slug: r.slug,
-      title: r.title,
-      date: r.date,
-      summary: r.summary,
-      description: r.description,
+      title: pick(r, 'title'),
+      date: pick(r, 'date'),
+      summary: pick(r, 'summary'),
+      description: pick(r, 'description'),
       photos: list(r.photos ?? '').map(toImageUrl),
     }));
 }
