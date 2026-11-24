@@ -49,7 +49,7 @@ function parseRoute(spec: string, locale: string): Stop[] {
     .split('>')
     .map((s) => s.trim())
     .filter(Boolean)
-    .map((part) => {
+    .map((part): Stop | null => {
       const note = part.match(/\(([^)]*)\)\s*$/)?.[1]?.trim();
       const base = part.replace(/\([^)]*\)\s*$/, '').trim();
       const custom = base.match(/^(.+?)@\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
@@ -85,7 +85,8 @@ function loadLeaflet(): Promise<any> {
   });
 }
 
-const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ESC[c] ?? c);
 
 export default function RouteMap({ spec, locale }: { spec: string; locale: string }) {
   const el = useRef<HTMLDivElement>(null);
