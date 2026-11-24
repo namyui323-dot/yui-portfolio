@@ -99,9 +99,9 @@ export default function RouteMap({ spec, locale }: { spec: string; locale: strin
       .then((L) => {
         if (cancelled || !el.current || stops.length === 0) return;
         map = L.map(el.current, { scrollWheelZoom: false, attributionControl: true });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; OpenStreetMap &copy; CARTO',
-          maxZoom: 18,
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
         }).addTo(map);
 
         const pts = stops.map((s) => [s.lat, s.lng]);
