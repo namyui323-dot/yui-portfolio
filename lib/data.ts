@@ -183,6 +183,8 @@ export const activitiesData: {
   summary: string;
   description: string;
   photos: string[];
+  featured?: boolean;
+  cover?: string;
 }[] = [
   {
     slug: 'turin',

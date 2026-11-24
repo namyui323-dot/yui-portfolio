@@ -127,16 +127,33 @@ export async function getActivities(locale: string = 'en'): Promise<Activity[]> 
   if (!rows || rows.length === 0) return activitiesData;
   const pick = (r: Record<string, string>, key: string) =>
     (locale === 'ko' && r[`${key}_ko`]) || r[key] || r[`${key}_en`] || '';
+  // 대표 카드 사진: cover 칸 → photos 첫 장 → description 안 첫 사진 순서로 사용
+  const firstInlineImage = (text: string) => {
+    for (const l of text.split(/\n/)) {
+      const t = l.trim();
+      const m = t.match(/^!\[[^\]]*\]\((\S+)\)$/);
+      if (m) return m[1];
+      if (/^https?:\/\/\S+$/.test(t)) return t;
+    }
+    return '';
+  };
   return rows
     .filter((r) => r.slug)
-    .map((r) => ({
-      slug: r.slug,
-      title: pick(r, 'title'),
-      date: pick(r, 'date'),
-      summary: pick(r, 'summary'),
-      description: pick(r, 'description'),
-      photos: list(r.photos ?? '').map(toImageUrl),
-    }));
+    .map((r) => {
+      const description = pick(r, 'description');
+      const photos = list(r.photos ?? '').map(toImageUrl);
+      const cover = r.cover || photos[0] || firstInlineImage(description);
+      return {
+        slug: r.slug,
+        title: pick(r, 'title'),
+        date: pick(r, 'date'),
+        summary: pick(r, 'summary'),
+        description,
+        photos,
+        featured: ['y', 'yes', 'o', '대표'].includes((r.featured ?? '').toLowerCase()),
+        cover: cover ? toImageUrl(cover) : undefined,
+      };
+    });
 }
 
 export async function getEducation(): Promise<Education[]> {
