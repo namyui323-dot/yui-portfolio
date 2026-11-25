@@ -157,6 +157,8 @@ function renderDetail(text: string): ReactNode {
   );
 }
 
+const isVideoSrc = (v: string) => /\.(mp4|webm)(\?|$)/i.test(v);
+
 // 카드를 클릭하면 뜨는 상세 화면: 위쪽 영상은 계속 재생되고, 아래 내용만 스크롤됨
 function ProjectModal({
   src, title, description, tags, detail, onClose, ko,
@@ -197,6 +199,7 @@ function ProjectModal({
         className="flex h-full w-full max-w-3xl flex-col overflow-hidden bg-white text-gray-900 shadow-2xl dark:bg-gray-900 dark:text-white/90 sm:h-auto sm:max-h-[92vh] sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {isVideoSrc(src) ? (
         <div className="relative shrink-0 bg-black">
           <video
             ref={ref}
@@ -219,6 +222,19 @@ function ProjectModal({
             <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
+        ) : (
+        <div className="relative shrink-0 bg-gray-100 dark:bg-black/40">
+          {src ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={src} alt={title} className="mx-auto max-h-[38vh] w-full object-contain sm:max-h-[50vh]" />
+          ) : (
+            <div className="h-14" />
+          )}
+          <button type="button" onClick={onClose} aria-label={ko ? '닫기' : 'Close'} className={`${btn} right-3`}>
+            <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+        )}
         <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 py-6 pb-12 sm:px-10 sm:py-8 sm:pb-14">
           <h2 className="text-2xl font-semibold leading-snug">{title}</h2>
           {tags.length > 0 && (
@@ -264,6 +280,9 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   const isGif = /\.gif(\?|$)/i.test(src);
   // 영상·태그 카드는 16:9 비율로 잘림 없이 보여주고, 정지 이미지 카드만 기존 높이(스크롤 효과) 유지
   const isStaticImage = !!current && !isVideo;
+  // 영상이 있거나 상세 내용(detail)이 있으면 카드를 눌러 상세 화면을 엶
+  const clickable = isVideo || !!detail;
+  const openModal = () => setOpen(true);
 
   const card = (
     <motion.article
@@ -272,20 +291,20 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
       viewport={{ once: true, margin: '-60px' }}
       transition={{ delay: 0.06 * (index % 2) }}
       whileHover={{ y: -6 }}
-      className="group h-full flex flex-col"
+      className={`group h-full flex flex-col ${clickable ? 'cursor-pointer' : ''}`}
+      {...(clickable
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': title,
+            onClick: openModal,
+            onKeyDown: (e: ReactKeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && openModal(),
+          }
+        : {})}
     >
       {/* 미리보기: 이미지가 있으면 마우스를 올렸을 때 천천히 아래로 스크롤, 없으면 태그가 흐르는 띠 */}
       <div
-        className={`relative ${isStaticImage ? 'h-44 sm:h-48' : 'aspect-video'} overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10 ${isVideo ? 'cursor-pointer' : ''}`}
-        {...(isVideo
-          ? {
-              role: 'button',
-              tabIndex: 0,
-              'aria-label': title,
-              onClick: () => setOpen(true),
-              onKeyDown: (e: ReactKeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && setOpen(true),
-            }
-          : {})}
+        className={`relative ${isStaticImage ? 'h-44 sm:h-48' : 'aspect-video'} overflow-hidden rounded-2xl border border-black/10 bg-gray-100 dark:bg-white/5 dark:border-white/10 `}
       >
         {waiting ? null : isVideo ? (
           // 움직이는 미리보기: 짧은 화면 녹화 영상(.mp4/.webm)을 소리 없이 반복 재생
@@ -363,7 +382,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   );
 
   const modal =
-    open && isVideo && mounted
+    open && clickable && mounted
       ? createPortal(
           <ProjectModal src={src} title={title} description={structured && !rawDetail ? '' : description} tags={tags} detail={detail} ko={locale === 'ko'} onClose={() => setOpen(false)} />,
           document.body,
@@ -371,7 +390,7 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
       : null;
 
   // 영상 카드는 클릭 시 큰 화면이 뜨므로 링크로 감싸지 않음
-  if (imageLink && !isVideo) {
+  if (imageLink && !clickable) {
     return (
       <a href={imageLink} target="_blank" rel="noreferrer" className="block h-full">
         {card}
