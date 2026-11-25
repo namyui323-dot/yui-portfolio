@@ -40,7 +40,8 @@
     "Skills": "Skills",
     "Education": "Education",
     "Activities": "Activities",
-    "BackToActivities": "Back to activities"
+    "BackToActivities": "Back to activities",
+    "VisitCompany": "Visit company"
   },
   "footer": {
     "text": "Thanks for scrolling all the way down."

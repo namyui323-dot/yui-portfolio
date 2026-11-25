@@ -73,7 +73,7 @@ export default function Experience({ items = experiencesData }: { items?: Experi
                           rel="noreferrer"
                           className="group mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
                         >
-                          Visit company
+                          {h('VisitCompany')}
                           <BsArrowUpRight className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
                         </a>
                       )}

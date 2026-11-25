@@ -36,13 +36,14 @@
     "cv": "/CV_Yui_KO.pdf"
   },
   "headings": {
-    "Experience": "Experience",
-    "Skills": "Skills",
-    "Education": "Education",
-    "Activities": "Activities",
-    "BackToActivities": "Back to activities"
+    "Experience": "경력",
+    "Skills": "역량",
+    "Education": "학력",
+    "Activities": "활동",
+    "BackToActivities": "활동 목록으로",
+    "VisitCompany": "회사 홈페이지"
   },
   "footer": {
-    "text": "Thanks for scrolling all the way down."
+    "text": "끝까지 읽어 주셔서 감사합니다."
   }
 }

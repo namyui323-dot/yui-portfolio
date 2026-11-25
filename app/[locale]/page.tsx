@@ -16,11 +16,11 @@ export const revalidate = 60;
 export default async function Home() {
   const locale = await getLocale();
   const [experiences, projects, activities, education, skills] = await Promise.all([
-    getExperiences(),
+    getExperiences(locale),
     getProjects(),
     getActivities(locale),
-    getEducation(),
-    getSkills(),
+    getEducation(locale),
+    getSkills(locale),
   ]);
 
   return (

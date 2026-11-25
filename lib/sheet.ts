@@ -1,4 +1,5 @@
 import { createTranslator } from 'next-intl';
+import { cvExperiences, cvEducation, cvSkills } from './cv-data';
 import { experiencesData, projectsData, activitiesData, educationData, skillsData } from './data';
 
 // ✏️ 구글 시트 ID: 시트 주소 docs.google.com/spreadsheets/d/【여기 부분】/edit 을 따옴표 안에 붙여넣으세요.
@@ -87,21 +88,19 @@ async function readTab(tab: string): Promise<Record<string, string>[] | null> {
   }
 }
 
-const lines = (v: string) => v.split(/\n/).map((s) => s.trim()).filter(Boolean);
 const list = (v: string) => v.split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
 
 // ───────── 섹션별 데이터 ─────────
-export async function getExperiences(): Promise<Experience[]> {
-  const rows = await readTab('Experience');
-  if (!rows || rows.length === 0) return experiencesData;
-  return rows.map((r) => ({
-    role: r.role,
-    company: r.company,
-    date: r.date,
-    location: r.location,
-    url: r.url,
-    summary: r.summary,
-    points: lines(r.points ?? ''),
+export async function getExperiences(locale: string = 'en'): Promise<Experience[]> {
+  const lg = locale === 'ko' ? 'ko' : 'en';
+  return cvExperiences.map((e) => ({
+    role: e.role[lg],
+    company: e.company[lg],
+    date: e.date[lg],
+    location: e.location[lg],
+    url: e.url ?? '',
+    summary: e.summary[lg],
+    points: e.points[lg],
   }));
 }
 
@@ -156,29 +155,20 @@ export async function getActivities(locale: string = 'en'): Promise<Activity[]> 
     });
 }
 
-export async function getEducation(): Promise<Education[]> {
-  const rows = await readTab('Education');
-  if (!rows || rows.length === 0) return educationData;
-  return rows.map((r) => ({
-    degree: r.degree,
-    school: r.school,
-    date: r.date,
-    location: r.location,
-    note: r.note,
+export async function getEducation(locale: string = 'en'): Promise<Education[]> {
+  const lg = locale === 'ko' ? 'ko' : 'en';
+  return cvEducation.map((e) => ({
+    degree: e.degree[lg],
+    school: e.school[lg],
+    date: e.date[lg],
+    location: e.location[lg],
+    note: e.note[lg],
   }));
 }
 
-export async function getSkills(): Promise<Skill[]> {
-  const rows = await readTab('Skills');
-  if (!rows || rows.length === 0) return skillsData;
-  return rows
-    .filter((r) => r.name)
-    .map((r) => ({
-      name: r.name,
-      icon: r.icon ? r.icon.toLowerCase() : undefined,
-      color: r.color || undefined,
-      badge: r.badge || undefined,
-    }));
+export async function getSkills(locale: string = 'en'): Promise<Skill[]> {
+  const lg = locale === 'ko' ? 'ko' : 'en';
+  return cvSkills.map((k) => ({ name: k.name[lg], icon: k.icon, badge: k.badge }));
 }
 
 // ───────── 문구(Settings 탭) → 번역 메시지에 덮어쓰기 ─────────
