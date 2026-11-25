@@ -62,6 +62,8 @@ function inline(text: string): ReactNode[] {
 //  - 내용         → 목록 (문장 안 **강조** 가능)
 //  > 키워드 | 값  → 큰 숫자 성과 카드 (예: > 시간 | 약 3일 → 하루)
 //  ![설명](사진 주소) → 사진 (누르면 원본 크기로 새 탭에서 열림)
+//  ### 소제목     → 섹션 안의 작은 제목 (예: 01. 제품 포트폴리오)
+//  = 층 이름 | 장비1, 장비2 | 짧은 설명 → 피부층처럼 위에서 아래로 쌓이는 표 (줄 순서대로 표피·진피·피하 색)
 //  그 외 줄       → 일반 문단
 const IMG = /^!\[([^\]]*)\]\((\S+)\)$/;
 function imgUrl(v: string): string {
@@ -73,6 +75,7 @@ function renderDetail(text: string): ReactNode {
   const sections: Section[] = [{ nodes: [] }];
   let bullets: string[] = [];
   let metrics: { value: string; label: string }[] = [];
+  let layers: { name: string; items: string[]; note: string }[] = [];
   const cur = () => sections[sections.length - 1];
 
   const flush = () => {
@@ -111,6 +114,32 @@ function renderDetail(text: string): ReactNode {
       );
       metrics = [];
     }
+    if (layers.length) {
+      const tone = [
+        'bg-amber-100 text-amber-900 dark:bg-amber-300/20 dark:text-amber-100',
+        'bg-rose-200 text-rose-900 dark:bg-rose-400/25 dark:text-rose-100',
+        'bg-yellow-200 text-yellow-900 dark:bg-yellow-500/20 dark:text-yellow-100',
+        'bg-stone-200 text-stone-900 dark:bg-stone-400/20 dark:text-stone-100',
+      ];
+      nodes.push(
+        <div key={`l${nodes.length}`} className="overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
+          {layers.map((ly, i) => (
+            <div key={i} className={`flex flex-col sm:flex-row ${i > 0 ? 'border-t border-black/10 dark:border-white/10' : ''}`}>
+              <div className={`flex shrink-0 items-center px-4 py-3 text-sm font-semibold sm:w-36 ${tone[i % tone.length]}`}>{ly.name}</div>
+              <div className="flex-1 px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                  {ly.items.map((it) => (
+                    <span key={it} className="rounded-full bg-gray-900 px-3 py-1 text-sm font-medium leading-6 text-white dark:bg-white dark:text-gray-900">{it}</span>
+                  ))}
+                </div>
+                {ly.note && <div className="mt-2 text-sm leading-6 text-gray-600 dark:text-white/65">{inline(ly.note)}</div>}
+              </div>
+            </div>
+          ))}
+        </div>,
+      );
+      layers = [];
+    }
   };
 
   text
@@ -133,7 +162,7 @@ function renderDetail(text: string): ReactNode {
         );
       }
       if (l.startsWith('- ')) {
-        if (metrics.length) flush();
+        if (metrics.length || layers.length) flush();
         return void bullets.push(l.slice(2));
       }
       if (l.startsWith('# ')) {
@@ -144,8 +173,25 @@ function renderDetail(text: string): ReactNode {
           </p>,
         );
       }
+      if (l.startsWith('### ')) {
+        flush();
+        return void cur().nodes.push(
+          <h4 key={`h${cur().nodes.length}`} className="!mt-8 text-lg font-semibold text-gray-900 first:!mt-0 dark:text-white">
+            {inline(l.slice(4))}
+          </h4>,
+        );
+      }
+      if (l.startsWith('= ')) {
+        if (bullets.length || metrics.length) flush();
+        const [name, items = '', ...note] = l.slice(2).split('|');
+        return void layers.push({
+          name: name.trim(),
+          items: items.split(',').map((x) => x.trim()).filter(Boolean),
+          note: note.join('|').trim(),
+        });
+      }
       if (l.startsWith('> ')) {
-        if (bullets.length) flush();
+        if (bullets.length || layers.length) flush();
         const [label, ...rest] = l.slice(2).split('|');
         return void metrics.push(rest.length ? { label: label.trim(), value: rest.join('|').trim() } : { label: '', value: label.trim() });
       }
