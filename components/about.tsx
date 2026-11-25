@@ -7,15 +7,37 @@ import { useSectionInView } from '@/lib/hooks';
 import { useTranslations } from 'next-intl';
 
 // 문구 안의 <b>굵게</b>, <i>기울임</i>, <u>밑줄</u> 표시
-const rich = {
-  b: (chunks: React.ReactNode) => <span className="font-semibold">{chunks}</span>,
-  i: (chunks: React.ReactNode) => <span className="italic">{chunks}</span>,
-  u: (chunks: React.ReactNode) => <span className="underline">{chunks}</span>,
-};
+const STYLE: Record<string, string> = { b: 'font-semibold', i: 'italic', u: 'underline' };
+function rich(text: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  const re = /<(b|i|u)>([\s\S]*?)<\/\1>/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(
+      <span key={m.index} className={STYLE[m[1]]}>
+        {rich(m[2])}
+      </span>,
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+// 시트 Settings 탭 about.paragraph1 ~ about.paragraph8
+// 한 칸 안에서 줄을 바꾸면(Ctrl+Enter / Alt+Enter) 그 줄마다 문단이 나뉨
+const KEYS = ['paragraph1', 'paragraph2', 'paragraph3', 'paragraph4', 'paragraph5', 'paragraph6', 'paragraph7', 'paragraph8'] as const;
 
 export default function About() {
   const { ref } = useSectionInView('About');
   const t = useTranslations('about');
+  const paragraphs = KEYS.filter((k) => t.has(k))
+    .flatMap((k) => String(t.raw(k)).split(/\n+/))
+    .map((s) => s.trim().replace(/^"|"$/g, '').trim())
+    .filter(Boolean);
+
   return (
     <motion.section
       ref={ref}
@@ -26,10 +48,11 @@ export default function About() {
       id="about"
     >
       <SectionHeading>{t('title')}</SectionHeading>
-
-      <p>{t.rich('paragraph1', rich)}</p>
-
-      <p>{t.rich('paragraph2', rich)}</p>
+      <div className="flex flex-col gap-4">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{rich(p)}</p>
+        ))}
+      </div>
     </motion.section>
   );
 }
