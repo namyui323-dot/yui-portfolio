@@ -61,7 +61,7 @@ function inline(text: string): ReactNode[] {
 //  ## 제목        → 번호가 붙은 섹션 (예: 맥락과 목표 / 판단과 실행 / 변화와 성과)
 //  - 내용         → 목록 (문장 안 **강조** 가능)
 //  > 키워드 | 값  → 큰 숫자 성과 카드 (예: > 시간 | 약 3일 → 하루)
-//  ![설명](사진 주소) → 사진 (누르면 원본 크기로 새 탭에서 열림)
+//  ![설명](사진 주소) → 사진 (누르면 사이트 안에서 크게 보기, X·Esc·바깥 클릭으로 닫기)
 //  ### 소제목     → 섹션 안의 작은 제목 (예: 01. 제품 포트폴리오)
 //  = 층 이름 | 장비1, 장비2 | 짧은 설명 → 피부층처럼 위에서 아래로 쌓이는 표 (줄 순서대로 표피·진피·피하 색)
 //  그 외 줄       → 일반 문단
@@ -70,7 +70,7 @@ function imgUrl(v: string): string {
   const m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?.*id=)([\w-]+)/);
   return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : v;
 }
-function renderDetail(text: string): ReactNode {
+function renderDetail(text: string, onZoom?: (src: string, alt: string) => void): ReactNode {
   type Section = { title?: string; nodes: ReactNode[] };
   const sections: Section[] = [{ nodes: [] }];
   let bullets: string[] = [];
@@ -153,10 +153,15 @@ function renderDetail(text: string): ReactNode {
         const url = imgUrl(img[2]);
         return void cur().nodes.push(
           <figure key={`f${cur().nodes.length}`} className="!mt-6">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-black/10 bg-white dark:border-white/10">
+            <button
+              type="button"
+              onClick={() => onZoom?.(url, img[1])}
+              aria-label={img[1] || 'image'}
+              className="block w-full cursor-zoom-in overflow-hidden rounded-xl border border-black/10 bg-white dark:border-white/10"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt={img[1]} loading="lazy" className="w-full h-auto transition hover:opacity-90" />
-            </a>
+            </button>
             {img[1] && <figcaption className="mt-2 text-sm text-gray-500 dark:text-white/50">{img[1]}</figcaption>}
           </figure>,
         );
@@ -231,9 +236,17 @@ function ProjectModal({
 }: { src: string; title: string; description: string; tags: string[]; detail?: string; onClose: () => void; ko: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(false);
+  // 상세 안의 사진을 누르면 크게 보는 창 (닫으면 상세 화면으로 돌아감)
+  const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (zoomRef.current) setZoom(null);
+      else onClose();
+    };
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKey);
@@ -313,10 +326,42 @@ function ProjectModal({
             </div>
           )}
           {description && <p className="mt-4 text-lg leading-8 text-gray-700 dark:text-white/80">{description}</p>}
-          {detail && <div className={description ? 'mt-8 border-t border-black/10 pt-8 dark:border-white/10' : 'mt-6'}>{renderDetail(detail)}</div>}
+          {detail && <div className={description ? 'mt-8 border-t border-black/10 pt-8 dark:border-white/10' : 'mt-6'}>{renderDetail(detail, (src, alt) => setZoom({ src, alt }))}</div>}
         </div>
         </div>
       </div>
+      {zoom && (
+        <div
+          className="fixed inset-0 z-[1001] flex flex-col items-center justify-center bg-black/90 p-4 sm:p-10"
+          role="dialog"
+          aria-modal="true"
+          aria-label={zoom.alt}
+          onClick={(e) => {
+            e.stopPropagation();
+            setZoom(null);
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoom(null);
+            }}
+            aria-label={ko ? '닫기' : 'Close'}
+            className={`${btn} right-3 sm:right-5 sm:top-5`}
+          >
+            <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={zoom.src}
+            alt={zoom.alt}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[85vh] max-w-full rounded-lg bg-white object-contain shadow-2xl"
+          />
+          {zoom.alt && <p className="mt-3 text-center text-sm text-white/80">{zoom.alt}</p>}
+        </div>
+      )}
     </div>
   );
 }
