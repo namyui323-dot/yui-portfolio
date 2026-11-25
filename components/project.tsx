@@ -61,7 +61,13 @@ function inline(text: string): ReactNode[] {
 //  ## 제목        → 번호가 붙은 섹션 (예: 맥락과 목표 / 판단과 실행 / 변화와 성과)
 //  - 내용         → 목록 (문장 안 **강조** 가능)
 //  > 키워드 | 값  → 큰 숫자 성과 카드 (예: > 시간 | 약 3일 → 하루)
+//  ![설명](사진 주소) → 사진 (누르면 원본 크기로 새 탭에서 열림)
 //  그 외 줄       → 일반 문단
+const IMG = /^!\[([^\]]*)\]\((\S+)\)$/;
+function imgUrl(v: string): string {
+  const m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?.*id=)([\w-]+)/);
+  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : v;
+}
 function renderDetail(text: string): ReactNode {
   type Section = { title?: string; nodes: ReactNode[] };
   const sections: Section[] = [{ nodes: [] }];
@@ -112,6 +118,20 @@ function renderDetail(text: string): ReactNode {
     .map((l) => l.trim())
     .filter(Boolean)
     .forEach((l) => {
+      const img = l.match(IMG);
+      if (img) {
+        flush();
+        const url = imgUrl(img[2]);
+        return void cur().nodes.push(
+          <figure key={`f${cur().nodes.length}`} className="!mt-6">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-black/10 bg-white dark:border-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={img[1]} loading="lazy" className="w-full h-auto transition hover:opacity-90" />
+            </a>
+            {img[1] && <figcaption className="mt-2 text-sm text-gray-500 dark:text-white/50">{img[1]}</figcaption>}
+          </figure>,
+        );
+      }
       if (l.startsWith('- ')) {
         if (metrics.length) flush();
         return void bullets.push(l.slice(2));
