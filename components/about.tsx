@@ -50,7 +50,9 @@ export default function About() {
       <SectionHeading>{t('title')}</SectionHeading>
       <div className="flex flex-col gap-4">
         {paragraphs.map((p, i) => (
-          <p key={i}>{rich(p)}</p>
+          <p key={i} className="[word-break:keep-all] [text-wrap:pretty]">
+            {rich(p)}
+          </p>
         ))}
       </div>
     </motion.section>
