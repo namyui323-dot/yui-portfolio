@@ -287,9 +287,13 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   // 미리보기 후보: 시트 image 칸이 있으면 그것, 없으면 public/projects/<번호>.mp4·.png·.jpg … 순서로 찾음
   const candidates = useMemo(() => {
     if (imageUrl) return [imageUrl];
-    if (id) return EXTS.map((ext) => `/projects/${id}.${ext}`);
+    // 영어 화면이면 <번호>.en.png 같은 영어용 파일을 먼저 찾고, 없으면 기본 파일 사용
+    if (id) return [
+      ...(locale === 'en' ? EXTS.map((ext) => `/projects/${id}.en.${ext}`) : []),
+      ...EXTS.map((ext) => `/projects/${id}.${ext}`),
+    ];
     return [];
-  }, [imageUrl, id]);
+  }, [imageUrl, id, locale]);
   const [tryIndex, setTryIndex] = useState(0);
   const [open, setOpen] = useState(false);
   // 화면이 준비된 뒤에 파일을 찾아야 '없는 파일'을 제대로 감지할 수 있음
