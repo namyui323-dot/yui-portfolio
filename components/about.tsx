@@ -41,14 +41,14 @@ export default function About() {
   return (
     <motion.section
       ref={ref}
-      className="mb-28 max-w-[45rem] text-center leading-8 sm:mb-40 scroll-mt-28"
+      className="mb-28 max-w-[36rem] text-center leading-7 sm:mb-40 scroll-mt-28"
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.175 }}
       id="about"
     >
       <SectionHeading>{t('title')}</SectionHeading>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 text-[15px] text-gray-700 dark:text-white/80 sm:text-base">
         {paragraphs.map((p, i) => (
           <p key={i} className="[word-break:keep-all] [text-wrap:pretty]">
             {rich(p)}
