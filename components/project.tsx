@@ -179,7 +179,7 @@ function renderDetail(text: string): ReactNode {
 
 const isVideoSrc = (v: string) => /\.(mp4|webm)(\?|$)/i.test(v);
 
-// 카드를 클릭하면 뜨는 상세 화면: 위쪽 영상은 계속 재생되고, 아래 내용만 스크롤됨
+// 카드를 클릭하면 뜨는 상세 화면: 영상은 위에 고정된 채 재생되고, 사진은 내용과 함께 스크롤됨
 function ProjectModal({
   src, title, description, tags, detail, onClose, ko,
 }: { src: string; title: string; description: string; tags: string[]; detail?: string; onClose: () => void; ko: boolean }) {
@@ -243,19 +243,21 @@ function ProjectModal({
           </button>
         </div>
         ) : (
-        <div className="relative shrink-0 bg-gray-100 dark:bg-black/40">
-          {src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={title} className="mx-auto max-h-[38vh] w-full object-contain sm:max-h-[50vh]" />
-          ) : (
-            <div className="h-14" />
-          )}
+        // 사진 카드: 닫기 버튼만 위에 떠 있고, 사진은 아래 내용과 함께 스크롤됨
+        <div className="relative z-10 h-0 shrink-0">
           <button type="button" onClick={onClose} aria-label={ko ? '닫기' : 'Close'} className={`${btn} right-3`}>
             <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
         )}
-        <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-6 py-6 pb-12 sm:px-10 sm:py-8 sm:pb-14">
+        <div className="flex-1 overflow-y-auto overscroll-contain scroll-smooth">
+        {!isVideoSrc(src) && (src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={title} className="block w-full h-auto bg-gray-100 dark:bg-black/40" />
+        ) : (
+          <div className="h-14" />
+        ))}
+        <div className="px-6 py-6 pb-12 sm:px-10 sm:py-8 sm:pb-14">
           <h2 className="text-2xl font-semibold leading-snug">{title}</h2>
           {tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
@@ -266,6 +268,7 @@ function ProjectModal({
           )}
           {description && <p className="mt-4 text-lg leading-8 text-gray-700 dark:text-white/80">{description}</p>}
           {detail && <div className={description ? 'mt-8 border-t border-black/10 pt-8 dark:border-white/10' : 'mt-6'}>{renderDetail(detail)}</div>}
+        </div>
         </div>
       </div>
     </div>
