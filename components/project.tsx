@@ -341,25 +341,27 @@ function ProjectModal({
             setZoom(null);
           }}
         >
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setZoom(null);
-            }}
-            aria-label={ko ? '닫기' : 'Close'}
-            className={`${btn} right-3 sm:right-5 sm:top-5`}
-          >
-            <svg {...icon}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={zoom.src}
-            alt={zoom.alt}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[85vh] max-w-full rounded-lg bg-white object-contain shadow-2xl"
-          />
-          {zoom.alt && <p className="mt-3 text-center text-sm text-white/80">{zoom.alt}</p>}
+          {/* 사진 바로 아래 오른쪽에 닫기 버튼: 마우스를 멀리 움직이지 않아도 되게 */}
+          <div className="flex max-w-full flex-col items-stretch" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={zoom.src}
+              alt={zoom.alt}
+              className="max-h-[80vh] max-w-full rounded-lg bg-white object-contain shadow-2xl"
+            />
+            <div className="mt-3 flex items-center justify-between gap-4">
+              <p className="text-sm text-white/80">{zoom.alt}</p>
+              <button
+                type="button"
+                onClick={() => setZoom(null)}
+                aria-label={ko ? '닫기' : 'Close'}
+                className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/25"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                {ko ? '닫기' : 'Close'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
