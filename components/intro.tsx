@@ -20,7 +20,6 @@ export default function Intro() {
   const PROFILE_PHOTO = site('photo');
   const LINKEDIN_URL = site('linkedin');
   const CV_FILE = site('cv');
-  const cvIsExternal = CV_FILE.startsWith('http');
 
   return (
     <section
@@ -72,8 +71,9 @@ className="object-cover object-top transition duration-700 group-hover:scale-105
             </Link>
             <a
               href={CV_FILE}
-              download={cvIsExternal ? undefined : true}
-              {...(cvIsExternal ? { target: '_blank', rel: 'noreferrer' } : {})}
+              // 새 탭에서 PDF를 바로 열어 보여줌 (브라우저마다 '다운로드'가 조용히 막히거나 안 보이는 문제 방지)
+              target="_blank"
+              rel="noreferrer"
               className="group flex items-center gap-2 rounded-full bg-white px-6 py-3 outline-none transition hover:scale-105 focus:scale-105 active:scale-100 borderBlack dark:bg-white/10"
             >
               {t('downloadCvButton')}
