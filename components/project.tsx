@@ -299,10 +299,17 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
   const isVideo = /\.(mp4|webm)(\?|$)/i.test(src);
   const isGif = /\.gif(\?|$)/i.test(src);
   // 영상·태그 카드는 16:9 비율로 잘림 없이 보여주고, 정지 이미지 카드만 기존 높이(스크롤 효과) 유지
-  const isStaticImage = !!current && !isVideo;
   // 영상이 있거나 상세 내용(detail)이 있으면 카드를 눌러 상세 화면을 엶
   const clickable = isVideo || !!detail;
+  // 상세 화면이 있는 카드의 이미지는 영상 카드와 똑같이 16:9 틀에 통째로 보여줌
+  const fitImage = !!current && !isVideo && clickable;
+  const isStaticImage = !!current && !isVideo && !fitImage;
   const openModal = () => setOpen(true);
+  const expandIcon = (
+    <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white opacity-80 transition group-hover:opacity-100">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
+    </span>
+  );
 
   const card = (
     <motion.article
@@ -341,9 +348,21 @@ export default function Project({ id, translations, tags, imageUrl, imageLink, i
             aria-label={title}
             className="absolute inset-0 h-full w-full object-contain"
           />
-          <span className="pointer-events-none absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white opacity-80 transition group-hover:opacity-100">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
-          </span>
+          {expandIcon}
+          </>
+        ) : fitImage ? (
+          <>
+          <Image
+            key={src || 'fit'}
+            src={current}
+            {...(typeof current === 'string' ? { width: 1600, height: 900, sizes: '(max-width: 640px) 100vw, 420px' } : {})}
+            unoptimized={isGif}
+            onError={tryNext}
+            alt={title}
+            quality={90}
+            className="absolute inset-0 h-full w-full object-contain"
+          />
+          {expandIcon}
           </>
         ) : current ? (
           <Image
