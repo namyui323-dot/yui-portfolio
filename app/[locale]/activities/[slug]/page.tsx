@@ -15,10 +15,12 @@ export const revalidate = 60;
 //   ### 항목 이름           → 클릭하면 아래로 펼쳐지는 항목. 다음 ### 이나 ## 전까지의 내용이 안에 들어감
 //   - 내용                 → 목록
 //   ![설명](사진 링크)      → 사진 (연달아 쓰면 2열)
+//   ![설명](영상.mp4)       → 영상 (소리 없이 자동 반복 재생)
 //   [지도] 토리노 > 파르마 > ...  → 이동 경로 지도 (괄호 메모 가능: 볼로냐 (FICO, Ragù))
 const IMG_MD = /^!\[([^\]]*)\]\((\S+)\)$/;
 const IMG_URL = /^(https?:\/\/\S+|\/\S+\.(?:jpe?g|png|gif|webp|avif))$/i;
 const MAP = /^\[(?:지도|map)\]\s*(.+)$/i;
+const VIDEO = /^!\[([^\]]*)\]\((\S+\.(?:mp4|webm))\)$/i;
 
 function parseImage(line: string): InlineImage | null {
   const m = line.match(IMG_MD);
@@ -92,6 +94,27 @@ function renderLines(lines: string[], title: string, locale: string, keyBase: st
     images = [];
   };
   for (const line of lines) {
+    const vid = line.match(VIDEO);
+    if (vid) {
+      flushList();
+      flushImages();
+      out.push(
+        <figure key={k()} className="mt-4">
+          <video
+            src={vid[2]}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            preload="metadata"
+            className="w-full rounded-xl bg-white"
+          />
+          {vid[1] && <figcaption className="mt-2 text-sm text-gray-500 dark:text-white/50">{vid[1]}</figcaption>}
+        </figure>,
+      );
+      continue;
+    }
     const img = parseImage(line);
     if (img) {
       flushList();
